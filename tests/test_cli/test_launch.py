@@ -1,0 +1,38 @@
+import pytest
+
+from portfolio_hub import applications
+from portfolio_hub.applications import dto
+
+
+def test_resolve(cli, project: dto.Project, capsys: pytest.CaptureFixture[str]):
+    applications.create_environment(project.id, "anim", [("greeter_plugin", "1.0.0")])
+
+    assert cli("phub resolve sample_project anim") == 0
+
+    assert [line.rstrip() for line in capsys.readouterr().out.splitlines()] == [
+        " name            version",
+        " greeter         2.0.0",
+        " greeter_plugin  1.0.0",
+    ]
+
+
+def test_resolve_with_conflicting_packages_fails(cli, project: dto.Project, capsys: pytest.CaptureFixture[str]):
+    applications.create_environment(project.id, "anim", [("greeter", "1.0.0"), ("greeter_plugin", "1.0.0")])
+
+    assert cli("phub resolve sample_project anim") == 1
+
+    assert capsys.readouterr().err
+
+
+def test_launch(cli, project: dto.Project, capsys: pytest.CaptureFixture[str]):
+    applications.create_environment(project.id, "anim", [("greeter", "2.0.0")], tools=["greet"])
+
+    assert cli("phub launch sample_project anim greet") == 0
+
+    assert int(capsys.readouterr().out.strip()) > 0
+
+
+def test_launch_unknown_environment_fails(cli, project: dto.Project, capsys: pytest.CaptureFixture[str]):
+    assert cli("phub launch sample_project unknown greet") == 1
+
+    assert "unknown" in capsys.readouterr().err

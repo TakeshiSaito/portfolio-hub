@@ -1,0 +1,50 @@
+source_roots = ["scripts"]
+exclude = ["**/__pycache__"]
+
+[[modules]]
+path = "portfolio_hub.project"
+depends_on = []
+
+[[modules]]
+path = "portfolio_hub.package"
+depends_on = []
+
+[[modules]]
+path = "portfolio_hub.environment"
+depends_on = ["portfolio_hub.package"]
+
+[[modules]]
+path = "portfolio_hub.launcher"
+depends_on = ["portfolio_hub.environment", "portfolio_hub.package"]
+
+[[modules]]
+path = "portfolio_hub.applications"
+depends_on = ["portfolio_hub.project", "portfolio_hub.environment", "portfolio_hub.package", "portfolio_hub.launcher"]
+
+[[modules]]
+path = "portfolio_hub.env"
+depends_on = []
+
+[[modules]]
+path = "portfolio_hub.log"
+depends_on = ["portfolio_hub.env"]
+
+[[modules]]
+path = "portfolio_hub.sqlite"
+depends_on = ["portfolio_hub.env", "portfolio_hub.project", "portfolio_hub.environment", "portfolio_hub.package"]
+
+[[modules]]
+path = "portfolio_hub.rez"
+depends_on = ["portfolio_hub.environment", "portfolio_hub.package", "portfolio_hub.launcher"]
+
+[[modules]]
+path = "portfolio_hub.installer"
+depends_on = ["portfolio_hub.applications", "portfolio_hub.log", "portfolio_hub.sqlite", "portfolio_hub.rez"]
+
+[[modules]]
+path = "portfolio_hub.http"
+depends_on = ["portfolio_hub.applications", "portfolio_hub.installer", "portfolio_hub.env", "portfolio_hub.project", "portfolio_hub.environment", "portfolio_hub.launcher"]
+
+[[modules]]
+path = "portfolio_hub.cli"
+depends_on = ["portfolio_hub.applications", "portfolio_hub.installer", "portfolio_hub.http", "portfolio_hub.project", "portfolio_hub.environment", "portfolio_hub.launcher"]

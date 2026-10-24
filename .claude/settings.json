@@ -1,0 +1,87 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./test.sh:*)",
+      "Bash(uv run pytest:*)",
+      "Bash(uv run ruff check:*)",
+      "Bash(uv run ty check:*)",
+      "Bash(uv run tach check:*)",
+      "Bash(uv run tach check-external:*)",
+      "Bash(uv run phub --help:*)",
+      "Bash(uv run phub projects list:*)",
+      "Bash(uv run phub environments list:*)",
+      "Bash(uv run phub packages:*)",
+      "Bash(uv run phub resolve:*)",
+      "Bash(uv sync:*)",
+      "Bash(uv lock:*)",
+      "Bash(uv audit:*)",
+      "Bash(uv build:*)",
+      "Bash(python3 .github/scripts/changelog.py:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git ls-files:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git branch --show-current)",
+      "Bash(git remote -v)",
+      "Bash(gh repo view:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh release view:*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Bash(rm -rf:*)",
+      "Bash(git clean:*)",
+      "Bash(gh repo delete:*)",
+      "Bash(uv publish:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git reset --hard:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" || exit 0; cmd=$(jq -r \".tool_input.command // empty\"); printf \"%s\\n\" \"$cmd\" | grep -Eq \"(^|[;&|]) *git( +-C +[^ ]+)? +push( |$)\" || exit 0; if printf \"%s\\n\" \"$cmd\" | grep -Eq \"push.*[ :+](refs/heads/)?main( |$)|--all|--mirror\" || [ \"$(git branch --show-current)\" = main ]; then echo \"Pushing to main directly is not allowed. Push a branch and open a pull request instead.\" >&2; exit 2; fi",
+            "timeout": 10,
+            "statusMessage": "Checking the push target..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" || exit 0; jq -e \".stop_hook_active == true\" >/dev/null 2>&1 && exit 0; out=$(uv run --quiet ruff check --output-format concise . 2>&1) || { printf \"ruff check found violations. Fix them before finishing:\\n%s\\n\" \"$out\" >&2; exit 2; }",
+            "timeout": 120,
+            "statusMessage": "Running ruff check..."
+          },
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" || exit 0; jq -e \".stop_hook_active == true\" >/dev/null 2>&1 && exit 0; out=$(uv run --quiet ty check --output-format concise 2>&1) || { printf \"ty check found type errors. Fix them before finishing:\\n%s\\n\" \"$out\" >&2; exit 2; }",
+            "timeout": 120,
+            "statusMessage": "Running ty check..."
+          },
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" || exit 0; [ -f tach.toml ] || exit 0; jq -e \".stop_hook_active == true\" >/dev/null 2>&1 && exit 0; out=$( { uv run --quiet tach check && uv run --quiet tach check-external; } 2>&1) || { printf \"tach found module boundary violations. Fix them before finishing:\\n%s\\n\" \"$out\" >&2; exit 2; }",
+            "timeout": 120,
+            "statusMessage": "Running tach check..."
+          }
+        ]
+      }
+    ]
+  }
+}
