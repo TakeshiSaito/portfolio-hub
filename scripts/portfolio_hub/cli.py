@@ -2,7 +2,6 @@ import argparse
 import sys
 from uuid import UUID
 
-import argcomplete
 from rich.console import Console
 from rich.table import Table
 
@@ -14,10 +13,8 @@ from portfolio_hub.project import ProjectNotFoundError
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = _parser()
-    argcomplete.autocomplete(parser)
     installer.get()
-    arguments = parser.parse_args(sys.argv[1:] if argv is None else argv)
+    arguments = _parser().parse_args(sys.argv[1:] if argv is None else argv)
     try:
         arguments.handler(arguments)
     except (LookupError, ValueError, FailedToResolveError) as error:

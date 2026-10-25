@@ -90,14 +90,6 @@ $ uv run phub resolve sample_project anim
 uv run phub launch sample_project anim greet
 ```
 
-コマンドとオプションは、Tab キーで補完できます（[argcomplete](https://github.com/kislyuk/argcomplete)）。
-仮想環境に入ってから、シェルに補完を登録します。
-
-```bash
-source .venv/bin/activate
-eval "$(register-python-argcomplete phub)"
-```
-
 データは `PORTFOLIO_HUB_SQLITE_PATH`（既定は `PORTFOLIO_HUB_HOME` の下の `portfolio_hub.db`）の SQLite に保存されます。
 
 ## 3. serve で FastAPI のドキュメント画面を開く
