@@ -1,3 +1,6 @@
+import re
+from pathlib import Path
+
 import pytest
 
 from portfolio_hub import applications
@@ -29,7 +32,16 @@ def test_launch(cli, project: dto.Project, capsys: pytest.CaptureFixture[str]):
 
     assert cli("phub launch sample_project anim greet") == 0
 
-    assert int(capsys.readouterr().out.strip()) > 0
+    assert re.fullmatch(r"launched greet in environment anim of project sample_project \(pid \d+\)\n", capsys.readouterr().out)
+
+
+def test_launch_without_a_tool(cli, project: dto.Project, capsys: pytest.CaptureFixture[str], tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setenv("PORTFOLIO_HUB_TEST_RECORD", str(tmp_path / "record"))
+    applications.create_environment(project.id, "anim", [("greeter", "2.0.0")])
+
+    assert cli("phub launch sample_project anim") == 0
+
+    assert re.fullmatch(r"launched terminal in environment anim of project sample_project \(pid \d+\)\n", capsys.readouterr().out)
 
 
 def test_launch_unregistered_tool_fails(cli, project: dto.Project, capsys: pytest.CaptureFixture[str]):

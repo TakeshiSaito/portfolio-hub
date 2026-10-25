@@ -25,7 +25,7 @@ def test_list_environments_of_an_unknown_project_fails(cli, capsys: pytest.Captu
     assert capsys.readouterr().err == "project unknown does not exist\n"
 
 
-def test_create_environment(cli, project: dto.Project):
+def test_create_environment(cli, project: dto.Project, capsys: pytest.CaptureFixture[str]):
     assert cli("phub environments create sample_project anim --package greeter 2.0.0 --tool greet --default-tool greet") == 0
 
     [environment] = applications.list_environments()
@@ -34,6 +34,7 @@ def test_create_environment(cli, project: dto.Project):
     assert environment.packages == (dto.Package(name="greeter", version="2.0.0"),)
     assert environment.tools == ("greet",)
     assert environment.default_tool == "greet"
+    assert capsys.readouterr().out == "created environment anim in project sample_project\n"
 
 
 def test_create_environment_without_a_package_fails(cli, project: dto.Project, capsys: pytest.CaptureFixture[str]):
@@ -50,21 +51,23 @@ def test_create_environment_in_an_unknown_project_fails(cli, capsys: pytest.Capt
     assert applications.list_environments() == []
 
 
-def test_rename_environment(cli, project: dto.Project):
+def test_rename_environment(cli, project: dto.Project, capsys: pytest.CaptureFixture[str]):
     environment = applications.create_environment(project.id, "anim", [("greeter", "2.0.0")])
 
     assert cli("phub environments rename sample_project anim layout") == 0
 
     assert [(e.id, e.name) for e in applications.list_environments()] == [(environment.id, "layout")]
+    assert capsys.readouterr().out == "renamed environment anim to layout in project sample_project\n"
 
 
-def test_set_packages(cli, project: dto.Project):
+def test_set_packages(cli, project: dto.Project, capsys: pytest.CaptureFixture[str]):
     applications.create_environment(project.id, "anim", [("greeter", "1.0.0")])
 
     assert cli("phub environments set-packages sample_project anim --package greeter_plugin 1.0.0") == 0
 
     [environment] = applications.list_environments()
     assert environment.packages == (dto.Package(name="greeter_plugin", version="1.0.0"),)
+    assert capsys.readouterr().out == "replaced the packages of environment anim in project sample_project\n"
 
 
 def test_set_packages_without_a_package_fails(cli, project: dto.Project, capsys: pytest.CaptureFixture[str]):
@@ -75,7 +78,7 @@ def test_set_packages_without_a_package_fails(cli, project: dto.Project, capsys:
     assert capsys.readouterr().err == "an environment needs at least one package\n"
 
 
-def test_set_tools(cli, project: dto.Project):
+def test_set_tools(cli, project: dto.Project, capsys: pytest.CaptureFixture[str]):
     applications.create_environment(project.id, "anim", [("greeter", "2.0.0")], tools=["greet"], default_tool="greet")
 
     assert cli("phub environments set-tools sample_project anim --tool cheer --default-tool cheer") == 0
@@ -83,6 +86,7 @@ def test_set_tools(cli, project: dto.Project):
     [environment] = applications.list_environments()
     assert environment.tools == ("cheer",)
     assert environment.default_tool == "cheer"
+    assert capsys.readouterr().out == "replaced the tools of environment anim in project sample_project\n"
 
 
 def test_set_tools_with_a_default_tool_that_is_not_one_of_them_fails(cli, project: dto.Project, capsys: pytest.CaptureFixture[str]):
@@ -93,12 +97,13 @@ def test_set_tools_with_a_default_tool_that_is_not_one_of_them_fails(cli, projec
     assert capsys.readouterr().err == "default tool cheer is not one of the tools\n"
 
 
-def test_delete_environment(cli, project: dto.Project):
+def test_delete_environment(cli, project: dto.Project, capsys: pytest.CaptureFixture[str]):
     applications.create_environment(project.id, "anim", [("greeter", "2.0.0")])
 
     assert cli("phub environments delete sample_project anim") == 0
 
     assert applications.list_environments() == []
+    assert capsys.readouterr().out == "deleted environment anim from project sample_project\n"
 
 
 def test_delete_unknown_environment_fails(cli, project: dto.Project, capsys: pytest.CaptureFixture[str]):
