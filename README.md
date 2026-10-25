@@ -66,7 +66,7 @@ $ uv run phub projects list
 sample_project
 $ uv run phub environments list sample_project
  name                packages     tools  default tool
- sample_environment  hello 1.0.0  hello  hello
+ sample_environment  hello 1.0.0  hello  terminal
 ```
 
 環境を作り、その環境が解決するパッケージを確認します。
@@ -75,7 +75,7 @@ $ uv run phub environments list sample_project
 $ uv run phub environments create sample_project anim --package greeter 2.0.0 --tool greet --default-tool greet
 $ uv run phub environments list sample_project
  name                packages       tools  default tool
- sample_environment  hello 1.0.0    hello  hello
+ sample_environment  hello 1.0.0    hello  terminal
  anim                greeter 2.0.0  greet  greet
 $ uv run phub resolve sample_project anim
  name     version

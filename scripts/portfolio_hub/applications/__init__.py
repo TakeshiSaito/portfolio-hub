@@ -222,6 +222,6 @@ def create_sample() -> None:
     create_project(
         "sample_project",
         environments=[
-            dto.NewEnvironment(name="sample_environment", packages=[dto.Package(name="hello", version="1.0.0")], tools=["hello"], default_tool="hello"),
+            dto.NewEnvironment(name="sample_environment", packages=[dto.Package(name="hello", version="1.0.0")], tools=["hello"]),
         ],
     )

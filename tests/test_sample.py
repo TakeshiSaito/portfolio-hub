@@ -12,4 +12,4 @@ def test_create_sample():
     assert environment.name == "sample_environment"
     assert environment.packages == (dto.Package(name="hello", version="1.0.0"),)
     assert environment.tools == ("hello",)
-    assert environment.default_tool == "hello"
+    assert environment.default_tool == "terminal"

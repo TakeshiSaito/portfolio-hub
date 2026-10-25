@@ -10,7 +10,7 @@ def test_start_without_a_database_creates_the_sample(cli, database: Path, capsys
 
     assert [line.rstrip() for line in capsys.readouterr().out.splitlines()] == [
         " name                packages     tools  default tool",
-        " sample_environment  hello 1.0.0  hello  hello",
+        " sample_environment  hello 1.0.0  hello  terminal",
     ]
 
 
