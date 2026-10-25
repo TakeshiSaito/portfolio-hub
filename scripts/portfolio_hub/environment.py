@@ -92,8 +92,11 @@ class Environment:
     def replace_tools(self, tools: Iterable[ToolName], default_tool: ToolName = TERMINAL) -> None:
         self._tools, self._default_tool = self._validated_tools(tools, default_tool)
 
-    def can_launch(self, tool: ToolName) -> bool:
-        return tool == TERMINAL or tool in self._tools
+    def tool_to_launch(self, tool: ToolName | None = None) -> ToolName:
+        tool = self._default_tool if tool is None else tool
+        if tool != TERMINAL and tool not in self._tools:
+            raise ToolNotRegisteredError(f"tool {tool} is not one of the tools of environment {self._name}")
+        return tool
 
     def _validated_packages(self, packages: Iterable[Package]) -> tuple[Package, ...]:
         packages = tuple(packages)

@@ -6,7 +6,7 @@ from dependency_injector.wiring import Provide, inject
 
 from portfolio_hub import services
 from portfolio_hub.applications import dto
-from portfolio_hub.environment import TERMINAL, Environment, EnvironmentName, ToolName, ToolNotRegisteredError
+from portfolio_hub.environment import TERMINAL, Environment, EnvironmentName, ToolName
 from portfolio_hub.environment import Repository as EnvironmentRepository
 from portfolio_hub.launcher import Launcher
 from portfolio_hub.package import Package, PackageName, PackageVersion
@@ -210,11 +210,7 @@ def launch(
     launcher: Launcher = Provide["launcher"],
 ) -> dto.Launch:
     environment = environment_repository.get(environment_id)
-    tool_name = environment.default_tool if tool is None else ToolName(tool)
-
-    if not environment.can_launch(tool_name):
-        raise ToolNotRegisteredError(f"tool {tool_name} is not one of the tools of environment {environment.name}")
-
+    tool_name = environment.tool_to_launch(None if tool is None else ToolName(tool))
     result = launcher.run(environment, tool_name)
     logger.info("launched %s in environment %s (%s) with pid %s", tool_name, environment.name, environment.id, result.pid)
     return dto.Launch.from_result(result)
