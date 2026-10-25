@@ -35,6 +35,13 @@ def test_get_environments_of_an_unknown_project_is_not_found(client: TestClient)
     assert response.json() == {"detail": f"project {project_id} does not exist"}
 
 
+def test_get_environments_of_an_invalid_project_id_is_unprocessable(client: TestClient):
+    response = client.get("/api/projects/not-a-uuid/environments")
+
+    assert response.status_code == 422
+    assert response.json() == {"detail": "Input should be a valid UUID, invalid character: found `n` at 0"}
+
+
 def test_post_environments(client: TestClient, project: dto.Project):
     response = client.post(
         f"/api/projects/{project.id}/environments",

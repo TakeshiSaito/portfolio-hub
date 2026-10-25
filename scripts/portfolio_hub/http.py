@@ -3,6 +3,7 @@ from uuid import UUID
 
 import uvicorn
 from fastapi import APIRouter, FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, ValidationError
@@ -75,6 +76,7 @@ def create_app() -> FastAPI:
     app.add_exception_handler(ProjectAlreadyExistsError, _conflict)
     app.add_exception_handler(EnvironmentAlreadyExistsError, _conflict)
     app.add_exception_handler(ValidationError, _invalid_value)
+    app.add_exception_handler(RequestValidationError, _invalid_value)
     app.add_exception_handler(ValueError, _unprocessable)
     app.add_exception_handler(FailedToResolveError, _unprocessable)
     return app
@@ -166,7 +168,7 @@ def _conflict(request: Request, error: Exception) -> JSONResponse:
 
 
 def _invalid_value(request: Request, error: Exception) -> JSONResponse:
-    message = "; ".join(detail["msg"] for detail in cast(ValidationError, error).errors())
+    message = "; ".join(detail["msg"] for detail in cast(ValidationError | RequestValidationError, error).errors())
     return JSONResponse(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, content={"detail": message})
 
 
