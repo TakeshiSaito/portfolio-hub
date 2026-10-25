@@ -10,7 +10,7 @@ from portfolio_hub.environment import Repository as EnvironmentRepository
 from portfolio_hub.launcher import Launcher
 from portfolio_hub.package import Package, PackageName, PackageVersion
 from portfolio_hub.package import Repository as PackageRepository
-from portfolio_hub.project import Project, ProjectName, ProjectNotFoundError
+from portfolio_hub.project import Project, ProjectName
 from portfolio_hub.project import Repository as ProjectRepository
 
 logger = logging.getLogger(__name__)
@@ -76,14 +76,13 @@ def delete_project(
     project_repository: ProjectRepository = Provide["project_repository"],
     environment_repository: EnvironmentRepository = Provide["environment_repository"],
 ) -> None:
-    if not project_repository.exists(project_id):
-        raise ProjectNotFoundError(f"project {project_id} does not exist")
+    project = project_repository.get(project_id)
     for environment in environment_repository.list():
         if environment.project_id == project_id:
             environment_repository.delete(environment.id)
             logger.info("deleted environment %s (%s)", environment.name, environment.id)
     project_repository.delete(project_id)
-    logger.info("deleted project %s", project_id)
+    logger.info("deleted project %s (%s)", project.name, project.id)
 
 
 @inject
@@ -106,8 +105,7 @@ def create_environment(
     project_repository: ProjectRepository = Provide["project_repository"],
     environment_repository: EnvironmentRepository = Provide["environment_repository"],
 ) -> dto.Environment:
-    if not project_repository.exists(project_id):
-        raise ProjectNotFoundError(f"project {project_id} does not exist")
+    project = project_repository.get(project_id)
     environment = Environment(
         project_id=project_id,
         name=EnvironmentName(name),
@@ -116,7 +114,7 @@ def create_environment(
         default_tool=ToolName(default_tool),
     )
     environment_repository.save(environment)
-    logger.info("created environment %s (%s) in project %s", environment.name, environment.id, project_id)
+    logger.info("created environment %s (%s) in project %s", environment.name, environment.id, project.name)
     return dto.Environment.from_environment(environment)
 
 
@@ -178,8 +176,9 @@ def delete_environment(
     *,
     environment_repository: EnvironmentRepository = Provide["environment_repository"],
 ) -> None:
+    environment = environment_repository.get(environment_id)
     environment_repository.delete(environment_id)
-    logger.info("deleted environment %s", environment_id)
+    logger.info("deleted environment %s (%s)", environment.name, environment.id)
 
 
 @inject
