@@ -4,13 +4,13 @@
 
 ### Changed
 
-- 対応する Python を 3.14 に限った（`requires-python = ">=3.14,<3.15"`）。Python 3.15 では、rez がプラグインを読み込めず動かないため。
+- Support only Python 3.14 (`requires-python = ">=3.14,<3.15"`), because rez cannot load its plugins on Python 3.15.
 
 ## [0.0.1] - 2026-10-25
 
 ### Added
 
-- 最初のリリース。1 台のマシンで、プロジェクトとその中の rez 環境を管理し、その環境でツールを起動するハブ。
-- プロジェクトと環境の作成・名前の変更・削除、環境のパッケージとツールの置き換え、パッケージの解決、ツールの起動（`terminal` でターミナルを開く）。
-- 操作の入口として、コマンドライン（`phub`）と HTTP API（FastAPI、`phub serve`）。バージョンは `phub --version` と Swagger UI で確認できる。
-- データは SQLite に保存し、状態を変える操作はログに記録する。
+- First release: a hub that manages projects and their rez environments on one machine and launches tools in them.
+- Create, rename and delete projects and environments, replace the packages and tools of an environment, resolve its packages, and launch tools (`terminal` opens a terminal).
+- A command line (`phub`) and an HTTP API (FastAPI, `phub serve`). `phub --version` and Swagger UI show the version.
+- Data is stored in SQLite, and every operation that changes it is logged.
