@@ -1,6 +1,6 @@
 # portfolio-hub
 
-[![CI](https://github.com/TakeshiSaito/launcher/actions/workflows/ci.yml/badge.svg)](https://github.com/TakeshiSaito/launcher/actions/workflows/ci.yml)
+[![CI](https://github.com/TakeshiSaito/portfolio-hub/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/TakeshiSaito/portfolio-hub/actions/workflows/ci.yml?query=branch%3Amain)
 [![Python 3.14](https://img.shields.io/badge/python-3.14-blue)](https://www.python.org/)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
