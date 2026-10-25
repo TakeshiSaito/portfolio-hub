@@ -1,3 +1,5 @@
-from importlib.metadata import version
+from importlib.metadata import metadata
 
-__version__ = version("portfolio-hub")
+__title__ = metadata("portfolio-hub")["Name"]
+__version__ = metadata("portfolio-hub")["Version"]
+__description__ = metadata("portfolio-hub")["Summary"]

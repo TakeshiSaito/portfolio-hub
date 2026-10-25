@@ -35,8 +35,8 @@ def log_file(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def version() -> str:
-    return tomllib.loads((Path(__file__).parents[1] / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
+def project_metadata() -> dict[str, str]:
+    return tomllib.loads((Path(__file__).parents[1] / "pyproject.toml").read_text(encoding="utf-8"))["project"]
 
 
 @pytest.fixture

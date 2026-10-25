@@ -6,7 +6,7 @@ from pydantic import ValidationError
 from rich.console import Console
 from rich.table import Table
 
-from portfolio_hub import __version__, applications, http, installer
+from portfolio_hub import __description__, __version__, applications, http, installer
 from portfolio_hub.applications import dto
 from portfolio_hub.environment import TERMINAL, EnvironmentNotFoundError
 from portfolio_hub.launcher import FailedToResolveError
@@ -28,7 +28,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="phub", description="Manage projects and their rez environments, and launch tools in them.")
+    parser = argparse.ArgumentParser(prog="phub", description=__description__)
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     commands = parser.add_subparsers(title="commands", metavar="COMMAND", required=True)
 

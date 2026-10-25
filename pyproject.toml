@@ -1,7 +1,7 @@
 [project]
 name = "portfolio-hub"
 version = "0.0.2"
-description = "Local hub for projects and their rez environments"
+description = "A hub that defines projects, sets up their environments, and launches tools in them."
 requires-python = ">=3.14,<3.15"
 license = "MIT"
 license-files = ["LICENSE"]
