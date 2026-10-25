@@ -25,12 +25,6 @@ cd portfolio-hub
 uv sync
 ```
 
-rez がパッケージを探す場所として、リポジトリに同梱のサンプルパッケージ（`packages/`）を指定します。
-
-```bash
-export REZ_PACKAGES_PATH="$PWD/packages"
-```
-
 ## 2. ターミナルを開いて、ライブラリを使う
 
 使えるパッケージを確かめます。`greeter` は、Python から使えるライブラリです。
@@ -100,4 +94,4 @@ INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 | `PORTFOLIO_HUB_REZ_BUNDLED_PACKAGES_PATH` | リポジトリ直下の `packages/` | 同梱の rez パッケージの置き場所（rez の設定のパスに加えて探す） |
 | `PORTFOLIO_HUB_REZ_TERMINAL_COMMAND` | macOS は `open -a Terminal`、それ以外は `x-terminal-emulator -e` | `terminal` を起動したときに使うターミナル |
 
-`REZ_PACKAGES_PATH` は rez 自身の設定なので、`.env` ではなくシェルで指定してください。
+同梱のパッケージ（`packages/`）は、いつも探し先に入ります。ほかの場所の rez パッケージも使うときは、rez 自身の設定の `REZ_PACKAGES_PATH` をシェルで指定してください。
