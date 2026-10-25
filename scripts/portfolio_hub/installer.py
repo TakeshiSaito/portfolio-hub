@@ -10,7 +10,7 @@ from portfolio_hub.sqlite.project import SqLiteProjectRepository
 
 
 class Container(containers.DeclarativeContainer):
-    wiring_config = containers.WiringConfiguration(modules=["portfolio_hub.applications"])
+    wiring_config = containers.WiringConfiguration(modules=["portfolio_hub.applications", "portfolio_hub.services"])
 
     rez_env = providers.Singleton(RezEnv)
     sqlite_env = providers.Singleton(SqLiteEnv)

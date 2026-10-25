@@ -4,8 +4,9 @@ from uuid import UUID
 
 from dependency_injector.wiring import Provide, inject
 
+from portfolio_hub import services
 from portfolio_hub.applications import dto
-from portfolio_hub.environment import TERMINAL, Environment, EnvironmentAlreadyExistsError, EnvironmentName, ToolName, ToolNotRegisteredError
+from portfolio_hub.environment import TERMINAL, Environment, EnvironmentName, ToolName, ToolNotRegisteredError
 from portfolio_hub.environment import Repository as EnvironmentRepository
 from portfolio_hub.launcher import Launcher
 from portfolio_hub.package import Package, PackageName, PackageVersion
@@ -34,24 +35,22 @@ def create_project(
     environment_repository: EnvironmentRepository = Provide["environment_repository"],
 ) -> dto.Project:
     project = Project(ProjectName(name))
-    entities = [
-        Environment(
-            project_id=project.id,
-            name=EnvironmentName(environment.name),
-            packages=[Package(PackageName(package.name), PackageVersion(package.version)) for package in environment.packages],
-            tools=[ToolName(tool) for tool in environment.tools],
-            default_tool=ToolName(environment.default_tool),
-        )
-        for environment in environments
-    ]
-    names = [str(entity.name) for entity in entities]
-    if duplicates := sorted({name for name in names if names.count(name) > 1}):
-        raise EnvironmentAlreadyExistsError(f"environments are given more than once: {', '.join(duplicates)}")
+
+    created: list[Environment] = []
+    for environment in environments:
+        packages = [Package(PackageName(package.name), PackageVersion(package.version)) for package in environment.packages]
+        tools = [ToolName(tool) for tool in environment.tools]
+        created.append(Environment(project.id, EnvironmentName(environment.name), packages, tools, ToolName(environment.default_tool)))
+
+    services.create_environments(project, created)
     project_repository.save(project)
+
     logger.info("created project %s (%s)", project.name, project.id)
-    for entity in entities:
-        environment_repository.save(entity)
-        logger.info("created environment %s (%s) in project %s", entity.name, entity.id, project.name)
+
+    for environment in created:
+        environment_repository.save(environment)
+        logger.info("created environment %s (%s) in project %s", environment.name, environment.id, project.name)
+
     return dto.Project.from_project(project)
 
 
@@ -108,12 +107,12 @@ def create_environment(
     environment_repository: EnvironmentRepository = Provide["environment_repository"],
 ) -> dto.Environment:
     project = project_repository.get(project_id)
-    environment = Environment(
-        project_id=project_id,
-        name=EnvironmentName(name),
-        packages=[Package(PackageName(package_name), PackageVersion(version)) for package_name, version in packages],
-        tools=[ToolName(tool) for tool in tools],
-        default_tool=ToolName(default_tool),
+    environment = services.create_environment(
+        project,
+        EnvironmentName(name),
+        [Package(PackageName(package_name), PackageVersion(version)) for package_name, version in packages],
+        [ToolName(tool) for tool in tools],
+        ToolName(default_tool),
     )
     environment_repository.save(environment)
     logger.info("created environment %s (%s) in project %s", environment.name, environment.id, project.name)
@@ -129,7 +128,7 @@ def rename_environment(
 ) -> None:
     environment = environment_repository.get(environment_id)
     old_name = environment.name
-    environment.rename(EnvironmentName(name))
+    services.rename_environment(environment, EnvironmentName(name))
     environment_repository.save(environment)
     logger.info("renamed environment %s to %s (%s)", old_name, environment.name, environment.id)
 
