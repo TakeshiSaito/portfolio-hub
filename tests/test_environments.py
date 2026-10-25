@@ -116,12 +116,29 @@ def test_rename_environment_and_replace_its_packages_and_tools(project: dto.Proj
     assert saved.default_tool == "cheer"
 
 
+def test_rename_environment_to_its_own_name(project: dto.Project):
+    environment = applications.create_environment(project.id, "anim", [("greeter", "2.0.0")])
+
+    applications.rename_environment(environment.id, "anim")
+
+    assert [saved.name for saved in applications.list_environments(project.id)] == ["anim"]
+
+
 def test_rename_environment_to_another_environments_name_in_the_project_fails(project: dto.Project):
     applications.create_environment(project.id, "anim", [("greeter", "2.0.0")])
     layout = applications.create_environment(project.id, "layout", [("greeter", "2.0.0")])
 
     with pytest.raises(EnvironmentAlreadyExistsError):
         applications.rename_environment(layout.id, "anim")
+
+
+def test_replace_packages_with_another_version(project: dto.Project):
+    environment = applications.create_environment(project.id, "anim", [("greeter", "1.0.0")])
+
+    applications.replace_packages(environment.id, [("greeter", "2.0.0")])
+
+    [saved] = applications.list_environments(project.id)
+    assert saved.packages == (dto.Package(name="greeter", version="2.0.0"),)
 
 
 def test_replace_packages_with_none_fails(project: dto.Project):
