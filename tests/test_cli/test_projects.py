@@ -9,7 +9,7 @@ def test_list_projects(cli, capsys: pytest.CaptureFixture[str]):
 
     assert cli("phub projects list") == 0
 
-    assert capsys.readouterr().out.splitlines() == ["sample_project", "fx_project"]
+    assert [line.rstrip() for line in capsys.readouterr().out.splitlines()] == [" name", " sample_project", " fx_project"]
 
 
 def test_create_project(cli, capsys: pytest.CaptureFixture[str]):

@@ -106,8 +106,10 @@ def _add_environment_arguments(parser: argparse.ArgumentParser) -> None:
 
 
 def _list_projects(arguments: argparse.Namespace) -> None:
+    table = Table("name", box=None)
     for project in applications.list_projects():
-        print(project.name)
+        table.add_row(project.name)
+    Console().print(table)
 
 
 def _create_project(arguments: argparse.Namespace) -> None:
