@@ -10,6 +10,8 @@
 1 台のマシン上で、プロジェクトとその中の [rez](https://github.com/AcademySoftwareFoundation/rez) 環境を管理し、その環境でツールを起動するハブです。
 操作の入口として、コマンドライン（`phub`）と HTTP API（FastAPI）を用意しています。
 
+![環境を作って起動し、開いたターミナルの Python から greeter を使う様子](.github/demo.gif)
+
 ## 必要なもの
 
 - macOS または Linux
