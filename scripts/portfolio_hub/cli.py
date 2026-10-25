@@ -2,6 +2,7 @@ import argparse
 import sys
 from uuid import UUID
 
+from pydantic import ValidationError
 from rich.console import Console
 from rich.table import Table
 
@@ -17,6 +18,9 @@ def main(argv: list[str] | None = None) -> int:
     arguments = _parser().parse_args(sys.argv[1:] if argv is None else argv)
     try:
         arguments.handler(arguments)
+    except ValidationError as error:
+        print("; ".join(detail["msg"] for detail in error.errors()), file=sys.stderr)
+        return 1
     except (LookupError, ValueError, FailedToResolveError) as error:
         print(error, file=sys.stderr)
         return 1

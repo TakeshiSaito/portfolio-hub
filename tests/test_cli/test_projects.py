@@ -22,7 +22,7 @@ def test_create_project(cli, capsys: pytest.CaptureFixture[str]):
 def test_create_project_with_an_invalid_name_fails(cli, capsys: pytest.CaptureFixture[str]):
     assert cli("phub projects create 'sample project'") == 1
 
-    assert capsys.readouterr().err
+    assert capsys.readouterr().err == "String should match pattern '^[A-Za-z0-9_]+$'\n"
     assert applications.list_projects() == []
 
 
