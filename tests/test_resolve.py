@@ -1,6 +1,8 @@
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
+from rez.config import config
 
 from portfolio_hub import applications
 from portfolio_hub.applications import dto
@@ -13,6 +15,20 @@ def test_resolve_environment_uses_the_chosen_version(project: dto.Project, versi
     environment = applications.create_environment(project.id, "anim", [("greeter", version)])
 
     assert dto.Package(name="greeter", version=version) in applications.resolve_environment(environment.id)
+
+
+def test_resolve_environment_uses_bundled_packages_when_they_are_not_on_the_search_path(project: dto.Project, tmp_path: Path):
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    environment = applications.create_environment(project.id, "anim", [("greeter", "2.0.0")])
+    config.override("packages_path", [str(empty)])
+    try:
+        assert list(config.packages_path) == [str(empty)]
+        resolved = applications.resolve_environment(environment.id)
+    finally:
+        config.remove_override("packages_path")
+
+    assert dto.Package(name="greeter", version="2.0.0") in resolved
 
 
 def test_resolve_environment_resolves_the_requirements_of_a_package(project: dto.Project):

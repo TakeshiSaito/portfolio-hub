@@ -51,6 +51,17 @@ def test_post_launches(client: TestClient, given, project: dict[str, Any]):
     assert body == {"tool": "greet", "pid": body["pid"], "resolved_packages": [{"name": "greeter", "version": "2.0.0"}]}
 
 
+def test_post_launches_without_a_tool_launches_the_default_tool(client: TestClient, given, project: dict[str, Any]):
+    environment = given(f"/api/projects/{project['id']}/environments", {"name": "anim", "packages": [{"name": "greeter", "version": "2.0.0"}], "tools": ["greet"], "default_tool": "greet"})
+
+    response = client.post(f"/api/environments/{environment['id']}/launches", json={})
+
+    body = response.json()
+    assert response.status_code == 201
+    assert body["pid"] > 0
+    assert body == {"tool": "greet", "pid": body["pid"], "resolved_packages": [{"name": "greeter", "version": "2.0.0"}]}
+
+
 def test_post_launches_in_an_unknown_environment_is_not_found(client: TestClient):
     environment_id = uuid4()
 

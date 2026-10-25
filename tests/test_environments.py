@@ -4,7 +4,7 @@ import pytest
 
 from portfolio_hub import applications
 from portfolio_hub.applications import dto
-from portfolio_hub.environment import EnvironmentAlreadyExistsError, EnvironmentNotFoundError
+from portfolio_hub.environment import EnvironmentAlreadyExistsError, EnvironmentNotFoundError, ToolNotRegisteredError
 from portfolio_hub.project import ProjectNotFoundError
 
 
@@ -116,6 +116,25 @@ def test_rename_environment_and_replace_its_packages_and_tools(project: dto.Proj
     assert saved.default_tool == "cheer"
 
 
+def test_rename_environment_to_its_own_name(project: dto.Project):
+    environment = applications.create_environment(project.id, "anim", [("greeter", "2.0.0")])
+
+    applications.rename_environment(environment.id, "anim")
+
+    assert [saved.name for saved in applications.list_environments(project.id)] == ["anim"]
+
+
+def test_rename_environment_to_the_name_of_one_in_another_project(project: dto.Project):
+    environment = applications.create_environment(project.id, "anim", [("greeter", "2.0.0")])
+    other = applications.create_project("other_project")
+    applications.create_environment(other.id, "layout", [("greeter", "2.0.0")])
+
+    applications.rename_environment(environment.id, "layout")
+
+    assert [saved.name for saved in applications.list_environments(project.id)] == ["layout"]
+    assert [saved.name for saved in applications.list_environments(other.id)] == ["layout"]
+
+
 def test_rename_environment_to_another_environments_name_in_the_project_fails(project: dto.Project):
     applications.create_environment(project.id, "anim", [("greeter", "2.0.0")])
     layout = applications.create_environment(project.id, "layout", [("greeter", "2.0.0")])
@@ -124,11 +143,38 @@ def test_rename_environment_to_another_environments_name_in_the_project_fails(pr
         applications.rename_environment(layout.id, "anim")
 
 
+def test_replace_packages_updates_a_version_and_drops_a_removed_package(project: dto.Project):
+    environment = applications.create_environment(project.id, "anim", [("greeter", "1.0.0"), ("hello", "1.0.0")], tools=["greet"], default_tool="greet")
+
+    applications.replace_packages(environment.id, [("greeter", "2.0.0")])
+
+    [saved] = applications.list_environments(project.id)
+    assert saved.packages == (dto.Package(name="greeter", version="2.0.0"),)
+    assert saved.tools == ("greet",)
+    assert saved.default_tool == "greet"
+    resolved = applications.resolve_environment(environment.id)
+    assert dto.Package(name="greeter", version="2.0.0") in resolved
+    assert dto.Package(name="greeter", version="1.0.0") not in resolved
+    assert dto.Package(name="hello", version="1.0.0") not in resolved
+
+
 def test_replace_packages_with_none_fails(project: dto.Project):
     environment = applications.create_environment(project.id, "anim", [("greeter", "2.0.0")])
 
     with pytest.raises(ValueError):
         applications.replace_packages(environment.id, [])
+
+
+def test_replace_tools_with_none_leaves_the_terminal(project: dto.Project):
+    environment = applications.create_environment(project.id, "anim", [("greeter", "2.0.0")], tools=["greet"], default_tool="greet")
+
+    applications.replace_tools(environment.id, [])
+
+    [saved] = applications.list_environments(project.id)
+    assert saved.tools == ()
+    assert saved.default_tool == "terminal"
+    with pytest.raises(ToolNotRegisteredError):
+        applications.launch(environment.id, "greet")
 
 
 def test_replace_tools_with_a_default_tool_that_is_not_one_of_them_fails(project: dto.Project):

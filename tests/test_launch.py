@@ -51,8 +51,9 @@ def test_launch_unregistered_tool_fails(project: dto.Project):
 def test_launch_without_a_tool_runs_the_default_tool(project: dto.Project, capfd: pytest.CaptureFixture[str]):
     environment = applications.create_environment(project.id, "anim", [("greeter", "2.0.0")], tools=["greet"], default_tool="greet")
 
-    applications.launch(environment.id)
+    result = applications.launch(environment.id)
 
+    assert result.tool == "greet"
     out = ""
     for _ in range(100):
         out += capfd.readouterr().out
@@ -69,6 +70,21 @@ def test_launch_without_a_tool_opens_a_terminal(project: dto.Project, tmp_path: 
 
     applications.launch(environment.id)
 
+    for _ in range(100):
+        if record.exists() and record.read_text().endswith("\n"):
+            break
+        time.sleep(0.1)
+    assert record.read_text() == "2.0.0\n"
+
+
+def test_launch_terminal_when_the_default_tool_is_another_tool(project: dto.Project, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    record = tmp_path / "record"
+    monkeypatch.setenv("PORTFOLIO_HUB_TEST_RECORD", str(record))
+    environment = applications.create_environment(project.id, "anim", [("greeter", "2.0.0")], tools=["greet"], default_tool="greet")
+
+    result = applications.launch(environment.id, "terminal")
+
+    assert result.tool == "terminal"
     for _ in range(100):
         if record.exists() and record.read_text().endswith("\n"):
             break

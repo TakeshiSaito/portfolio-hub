@@ -44,6 +44,14 @@ def test_post_projects_with_environments(client: TestClient):
     }
 
 
+def test_post_projects_with_several_invalid_fields_is_unprocessable(client: TestClient):
+    response = client.post("/api/projects", json={"name": 1, "environments": "nope"})
+
+    assert response.status_code == 422
+    assert response.json() == {"detail": "Input should be a valid string; Input should be a valid list"}
+    assert client.get("/api/projects").json() == []
+
+
 def test_post_projects_with_an_invalid_name_is_unprocessable(client: TestClient):
     response = client.post("/api/projects", json={"name": "sample project"})
 
