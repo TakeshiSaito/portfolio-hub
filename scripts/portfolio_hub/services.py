@@ -6,6 +6,21 @@ from portfolio_hub.environment import TERMINAL, Environment, EnvironmentAlreadyE
 from portfolio_hub.environment import Repository as EnvironmentRepository
 from portfolio_hub.package import Package
 from portfolio_hub.project import Project
+from portfolio_hub.project import Repository as ProjectRepository
+
+
+@inject
+def delete_project(
+    project: Project,
+    *,
+    project_repository: ProjectRepository = Provide["project_repository"],
+    environment_repository: EnvironmentRepository = Provide["environment_repository"],
+) -> list[Environment]:
+    environments = environment_repository.list(project.id)
+    for environment in environments:
+        environment_repository.delete(environment.id)
+    project_repository.delete(project.id)
+    return environments
 
 
 @inject

@@ -76,10 +76,8 @@ def delete_project(
     environment_repository: EnvironmentRepository = Provide["environment_repository"],
 ) -> None:
     project = project_repository.get(project_id)
-    for environment in environment_repository.list(project_id):
-        environment_repository.delete(environment.id)
+    for environment in services.delete_project(project):
         logger.info("deleted environment %s (%s)", environment.name, environment.id)
-    project_repository.delete(project_id)
     logger.info("deleted project %s (%s)", project.name, project.id)
 
 
