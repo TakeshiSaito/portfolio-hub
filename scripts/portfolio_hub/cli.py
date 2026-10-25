@@ -2,11 +2,11 @@ import argparse
 import sys
 from uuid import UUID
 
-import argcomplete
+from pydantic import ValidationError
 from rich.console import Console
 from rich.table import Table
 
-from portfolio_hub import __version__, applications, http, installer
+from portfolio_hub import __description__, __version__, applications, http, installer
 from portfolio_hub.applications import dto
 from portfolio_hub.environment import TERMINAL, EnvironmentNotFoundError
 from portfolio_hub.launcher import FailedToResolveError
@@ -14,12 +14,13 @@ from portfolio_hub.project import ProjectNotFoundError
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = _parser()
-    argcomplete.autocomplete(parser)
     installer.get()
-    arguments = parser.parse_args(sys.argv[1:] if argv is None else argv)
+    arguments = _parser().parse_args(sys.argv[1:] if argv is None else argv)
     try:
         arguments.handler(arguments)
+    except ValidationError as error:
+        print("; ".join(detail["msg"] for detail in error.errors()), file=sys.stderr)
+        return 1
     except (LookupError, ValueError, FailedToResolveError) as error:
         print(error, file=sys.stderr)
         return 1
@@ -27,7 +28,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="phub", description="Manage projects and their rez environments, and launch tools in them.")
+    parser = argparse.ArgumentParser(prog="phub", description=__description__)
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     commands = parser.add_subparsers(title="commands", metavar="COMMAND", required=True)
 
@@ -109,61 +110,69 @@ def _add_environment_arguments(parser: argparse.ArgumentParser) -> None:
 
 
 def _list_projects(arguments: argparse.Namespace) -> None:
+    table = Table("name", box=None)
     for project in applications.list_projects():
-        print(project.name)
+        table.add_row(project.name)
+    Console().print(table)
 
 
 def _create_project(arguments: argparse.Namespace) -> None:
-    applications.create_project(arguments.name)
+    project = applications.create_project(arguments.name)
+    print(f"created project {project.name}")
 
 
 def _rename_project(arguments: argparse.Namespace) -> None:
     applications.rename_project(_get_project_id(arguments.name), arguments.new_name)
+    print(f"renamed project {arguments.name} to {arguments.new_name}")
 
 
 def _delete_project(arguments: argparse.Namespace) -> None:
     applications.delete_project(_get_project_id(arguments.name))
+    print(f"deleted project {arguments.name}")
 
 
 def _list_environments(arguments: argparse.Namespace) -> None:
-    project_id = _get_project_id(arguments.project)
     table = Table("name", "packages", "tools", "default tool", box=None)
-    for environment in applications.list_environments():
-        if environment.project_id == project_id:
-            packages = sorted(environment.packages, key=lambda package: (package.name, package.version))
-            table.add_row(
-                environment.name,
-                ", ".join(f"{package.name} {package.version}" for package in packages),
-                ", ".join(sorted(environment.tools)),
-                environment.default_tool,
-            )
+    for environment in applications.list_environments(_get_project_id(arguments.project)):
+        packages = sorted(environment.packages, key=lambda package: (package.name, package.version))
+        table.add_row(
+            environment.name,
+            ", ".join(f"{package.name} {package.version}" for package in packages),
+            ", ".join(sorted(environment.tools)),
+            environment.default_tool,
+        )
     Console().print(table)
 
 
 def _create_environment(arguments: argparse.Namespace) -> None:
     packages = [(name, version) for name, version in arguments.package]
-    applications.create_environment(_get_project_id(arguments.project), arguments.name, packages, arguments.tool, arguments.default_tool)
+    environment = applications.create_environment(_get_project_id(arguments.project), arguments.name, packages, arguments.tool, arguments.default_tool)
+    print(f"created environment {environment.name} in project {arguments.project}")
 
 
 def _rename_environment(arguments: argparse.Namespace) -> None:
     environment = _get_environment(arguments.project, arguments.environment)
     applications.rename_environment(environment.id, arguments.new_name)
+    print(f"renamed environment {arguments.environment} to {arguments.new_name} in project {arguments.project}")
 
 
 def _set_packages(arguments: argparse.Namespace) -> None:
     environment = _get_environment(arguments.project, arguments.environment)
     packages = [(name, version) for name, version in arguments.package]
     applications.replace_packages(environment.id, packages)
+    print(f"replaced the packages of environment {arguments.environment} in project {arguments.project}")
 
 
 def _set_tools(arguments: argparse.Namespace) -> None:
     environment = _get_environment(arguments.project, arguments.environment)
     applications.replace_tools(environment.id, arguments.tool, arguments.default_tool)
+    print(f"replaced the tools of environment {arguments.environment} in project {arguments.project}")
 
 
 def _delete_environment(arguments: argparse.Namespace) -> None:
     environment = _get_environment(arguments.project, arguments.environment)
     applications.delete_environment(environment.id)
+    print(f"deleted environment {arguments.environment} from project {arguments.project}")
 
 
 def _list_packages(arguments: argparse.Namespace) -> None:
@@ -177,7 +186,8 @@ def _resolve(arguments: argparse.Namespace) -> None:
 
 def _launch(arguments: argparse.Namespace) -> None:
     environment = _get_environment(arguments.project, arguments.environment)
-    print(applications.launch(environment.id, arguments.tool).pid)
+    result = applications.launch(environment.id, arguments.tool)
+    print(f"launched {result.tool} in environment {arguments.environment} of project {arguments.project} (pid {result.pid})")
 
 
 def _serve(arguments: argparse.Namespace) -> None:
@@ -199,8 +209,7 @@ def _get_project_id(name: str) -> UUID:
 
 
 def _get_environment(project: str, name: str) -> dto.Environment:
-    project_id = _get_project_id(project)
-    for environment in applications.list_environments():
-        if environment.project_id == project_id and environment.name == name:
+    for environment in applications.list_environments(_get_project_id(project)):
+        if environment.name == name:
             return environment
     raise EnvironmentNotFoundError(f"environment {name} does not exist in project {project}")

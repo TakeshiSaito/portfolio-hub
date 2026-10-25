@@ -7,11 +7,9 @@ from pathlib import Path
 import httpx2
 import pytest
 
-from portfolio_hub import applications
 
-
-def test_serve(monkeypatch: pytest.MonkeyPatch):
-    project = applications.create_project("sample_project")
+def test_serve(given, monkeypatch: pytest.MonkeyPatch):
+    given("phub projects create sample_project")
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
         port = probe.getsockname()[1]
@@ -31,5 +29,6 @@ def test_serve(monkeypatch: pytest.MonkeyPatch):
         server.wait(timeout=10)
 
     assert response is not None
+    body = response.json()
     assert response.status_code == 200
-    assert response.json() == [{"id": str(project.id), "name": "sample_project"}]
+    assert body == [{"id": body[0]["id"], "name": "sample_project"}]

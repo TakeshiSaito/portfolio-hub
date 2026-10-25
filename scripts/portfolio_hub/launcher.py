@@ -13,6 +13,7 @@ class FailedToResolveError(RuntimeError):
 class LaunchResult(BaseModel):
     model_config = ConfigDict(frozen=True, arbitrary_types_allowed=True)
 
+    tool: ToolName
     resolved_packages: tuple[Package, ...]
     pid: PositiveInt
 

@@ -1,44 +1,47 @@
 import pytest
 
-from portfolio_hub import applications
 
-
-def test_list_projects(cli, capsys: pytest.CaptureFixture[str]):
-    applications.create_project("sample_project")
-    applications.create_project("fx_project")
+def test_list_projects(cli, given, capsys: pytest.CaptureFixture[str]):
+    given("phub projects create sample_project")
+    given("phub projects create fx_project")
 
     assert cli("phub projects list") == 0
 
-    assert capsys.readouterr().out.splitlines() == ["sample_project", "fx_project"]
+    assert [line.rstrip() for line in capsys.readouterr().out.splitlines()] == [" name", " sample_project", " fx_project"]
 
 
-def test_create_project(cli):
+def test_create_project(cli, capsys: pytest.CaptureFixture[str]):
     assert cli("phub projects create sample_project") == 0
 
-    assert [p.name for p in applications.list_projects()] == ["sample_project"]
+    assert capsys.readouterr().out == "created project sample_project\n"
+    assert cli("phub projects list") == 0
+    assert [line.rstrip() for line in capsys.readouterr().out.splitlines()] == [" name", " sample_project"]
 
 
 def test_create_project_with_an_invalid_name_fails(cli, capsys: pytest.CaptureFixture[str]):
     assert cli("phub projects create 'sample project'") == 1
 
-    assert capsys.readouterr().err
-    assert applications.list_projects() == []
+    assert capsys.readouterr().err == "String should match pattern '^[A-Za-z0-9_]+$'\n"
+    assert cli("phub projects list") == 0
+    assert [line.rstrip() for line in capsys.readouterr().out.splitlines()] == [" name"]
 
 
-def test_create_project_with_an_existing_name_fails(cli, capsys: pytest.CaptureFixture[str]):
-    applications.create_project("sample_project")
+def test_create_project_with_an_existing_name_fails(cli, given, capsys: pytest.CaptureFixture[str]):
+    given("phub projects create sample_project")
 
     assert cli("phub projects create sample_project") == 1
 
     assert capsys.readouterr().err == "project sample_project already exists\n"
 
 
-def test_rename_project(cli):
-    project = applications.create_project("sample_project")
+def test_rename_project(cli, given, capsys: pytest.CaptureFixture[str]):
+    given("phub projects create sample_project")
 
     assert cli("phub projects rename sample_project renamed") == 0
 
-    assert [(p.id, p.name) for p in applications.list_projects()] == [(project.id, "renamed")]
+    assert capsys.readouterr().out == "renamed project sample_project to renamed\n"
+    assert cli("phub projects list") == 0
+    assert [line.rstrip() for line in capsys.readouterr().out.splitlines()] == [" name", " renamed"]
 
 
 def test_rename_unknown_project_fails(cli, capsys: pytest.CaptureFixture[str]):
@@ -47,12 +50,14 @@ def test_rename_unknown_project_fails(cli, capsys: pytest.CaptureFixture[str]):
     assert capsys.readouterr().err == "project unknown does not exist\n"
 
 
-def test_delete_project(cli):
-    applications.create_project("sample_project")
+def test_delete_project(cli, given, capsys: pytest.CaptureFixture[str]):
+    given("phub projects create sample_project")
 
     assert cli("phub projects delete sample_project") == 0
 
-    assert applications.list_projects() == []
+    assert capsys.readouterr().out == "deleted project sample_project\n"
+    assert cli("phub projects list") == 0
+    assert [line.rstrip() for line in capsys.readouterr().out.splitlines()] == [" name"]
 
 
 def test_delete_unknown_project_fails(cli, capsys: pytest.CaptureFixture[str]):

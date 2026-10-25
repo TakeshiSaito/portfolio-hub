@@ -31,3 +31,11 @@ def test_resolve_environment_with_conflicting_packages_fails(project: dto.Projec
 def test_resolve_unknown_environment_fails():
     with pytest.raises(EnvironmentNotFoundError):
         applications.resolve_environment(uuid4())
+
+
+@pytest.mark.parametrize("package", [("greeter", "9.9.9"), ("nosuchpackage", "1.0.0")], ids=["missing version", "missing package"])
+def test_resolve_environment_with_a_missing_package_fails(project: dto.Project, package: tuple[str, str]):
+    environment = applications.create_environment(project.id, "anim", [package])
+
+    with pytest.raises(FailedToResolveError):
+        applications.resolve_environment(environment.id)

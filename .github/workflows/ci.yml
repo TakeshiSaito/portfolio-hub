@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10.3.0
+      - uses: astral-sh/setup-uv@v10.3.2
       - run: uv lock --check
       - run: python3 .github/scripts/changelog.py
       - run: uv audit --preview-features audit
@@ -30,8 +30,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10.3.0
+      - uses: astral-sh/setup-uv@v10.3.2
       - run: ./test.sh
+      - uses: codecov/codecov-action@v5
+        with:
+          files: reports/coverage.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
       - uses: actions/upload-artifact@v7
         if: always()
         with:

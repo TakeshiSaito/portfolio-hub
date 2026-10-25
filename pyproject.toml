@@ -1,12 +1,11 @@
 [project]
 name = "portfolio-hub"
-version = "0.0.1"
-description = "Local hub for projects and their rez environments"
-requires-python = ">=3.14"
+version = "0.0.2"
+description = "A hub that defines projects, sets up their environments, and launches tools in them."
+requires-python = ">=3.14,<3.15"
 license = "MIT"
 license-files = ["LICENSE"]
 dependencies = [
-    "argcomplete",
     "dependency-injector",
     "fastapi",
     "pydantic",
@@ -31,7 +30,7 @@ dev = [
 ]
 
 [build-system]
-requires = ["uv_build>=0.11.6,<0.12"]
+requires = ["uv_build>=0.11.6,<0.14"]
 build-backend = "uv_build"
 
 [tool.uv.build-backend]

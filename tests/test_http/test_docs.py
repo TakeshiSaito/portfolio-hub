@@ -57,8 +57,12 @@ def test_get_docs_enables_try_it_out(client: TestClient):
     assert '"tryItOutEnabled": true' in response.text
 
 
-def test_get_openapi_json_shows_the_version(client: TestClient, version: str):
+def test_get_openapi_json_shows_the_version(client: TestClient, project_metadata: dict[str, str]):
     response = client.get("/openapi.json")
 
     assert response.status_code == 200
-    assert response.json()["info"] == {"title": "portfolio-hub", "version": version}
+    assert response.json()["info"] == {
+        "title": project_metadata["name"],
+        "description": project_metadata["description"],
+        "version": project_metadata["version"],
+    }

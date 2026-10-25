@@ -4,6 +4,7 @@ from collections.abc import Iterable, Sequence
 from typing import Annotated
 from uuid import UUID, uuid4
 
+from dependency_injector.wiring import Provide, inject
 from pydantic import Field, RootModel
 
 from portfolio_hub.package import Package
@@ -14,6 +15,10 @@ class EnvironmentNotFoundError(LookupError):
 
 
 class EnvironmentAlreadyExistsError(ValueError):
+    pass
+
+
+class ToolNotRegisteredError(ValueError):
     pass
 
 
@@ -88,6 +93,12 @@ class Environment:
     def replace_tools(self, tools: Iterable[ToolName], default_tool: ToolName = TERMINAL) -> None:
         self._tools, self._default_tool = self._validated_tools(tools, default_tool)
 
+    def tool_to_launch(self, tool: ToolName | None = None) -> ToolName:
+        tool = self._default_tool if tool is None else tool
+        if tool != TERMINAL and tool not in self._tools:
+            raise ToolNotRegisteredError(f"tool {tool} is not one of the tools of environment {self._name}")
+        return tool
+
     def _validated_packages(self, packages: Iterable[Package]) -> tuple[Package, ...]:
         packages = tuple(packages)
         if not packages:
@@ -115,11 +126,7 @@ class Repository(ABC):
         ...
 
     @abstractmethod
-    def exists(self, environment_id: UUID) -> bool:
-        ...
-
-    @abstractmethod
-    def list(self) -> builtins.list[Environment]:
+    def list(self, project_id: UUID) -> builtins.list[Environment]:
         ...
 
     @abstractmethod
@@ -129,3 +136,59 @@ class Repository(ABC):
     @abstractmethod
     def delete(self, environment_id: UUID) -> None:
         ...
+
+
+@inject
+def create(
+    project_id: UUID,
+    name: EnvironmentName,
+    packages: Iterable[Package],
+    tools: Iterable[ToolName] = (),
+    default_tool: ToolName = TERMINAL,
+    *,
+    environment_repository: Repository = Provide["environment_repository"],
+) -> Environment:
+
+    environment = Environment(project_id, name, packages, tools, default_tool)
+    check_names(project_id, [environment], environment_repository=environment_repository)
+
+    return environment
+
+
+@inject
+def check_names(
+    project_id: UUID,
+    environments: Sequence[Environment],
+    *,
+    environment_repository: Repository = Provide["environment_repository"],
+) -> None:
+    environments_in_project = environment_repository.list(project_id)
+    for environment in environments:
+        name_is_in_project = False
+        for existing in environments_in_project:
+            if existing.name == environment.name:
+                name_is_in_project = True
+                break
+        if name_is_in_project:
+            raise EnvironmentAlreadyExistsError(f"the project already has an environment named {environment.name}")
+        environments_in_project.append(environment)
+
+
+@inject
+def rename(
+    environment: Environment,
+    name: EnvironmentName,
+    *,
+    environment_repository: Repository = Provide["environment_repository"],
+) -> None:
+    environments_in_project = environment_repository.list(environment.project_id)
+    name_is_in_project = False
+    for saved_environment in environments_in_project:
+        if saved_environment.id == environment.id:
+            continue
+        if saved_environment.name == name:
+            name_is_in_project = True
+            break
+    if name_is_in_project:
+        raise EnvironmentAlreadyExistsError(f"the project already has an environment named {name}")
+    environment.rename(name)
