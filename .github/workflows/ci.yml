@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v10.3.2
       - run: ./test.sh
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v7
         with:
           files: reports/coverage.xml
           token: ${{ secrets.CODECOV_TOKEN }}
