@@ -1,3 +1,4 @@
+import os
 import shlex
 from pathlib import Path
 from subprocess import Popen
@@ -24,7 +25,7 @@ class RezLauncher(Launcher):
 
     def run(self, environment: Environment, tool: ToolName) -> LaunchResult:
         context = self._resolve_context(environment)
-        process = self._open_terminal(context) if tool == TERMINAL else context.execute_command([str(tool)])
+        process = self._open_terminal(context) if tool == TERMINAL else context.execute_command([str(tool)], parent_environ=dict(os.environ), start_new_session=True)
         Thread(target=process.wait, daemon=True).start()
         return LaunchResult(tool=tool, resolved_packages=tuple(self._resolved_packages(context)), pid=process.pid)
 
@@ -48,4 +49,4 @@ class RezLauncher(Launcher):
             script.write(context.get_shell_code(shell="bash"))
             script.write('\nexec "${SHELL:-/bin/bash}" -i\n')
         Path(script.name).chmod(0o755)
-        return Popen([*self._terminal_command, script.name])
+        return Popen([*self._terminal_command, script.name], start_new_session=True)

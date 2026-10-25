@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.3] - 2026-10-25
+
+### Fixed
+
+- A launched tool inherits variables from the surrounding process, such as `HOME` and `DISPLAY`, and runs in its own session, so it keeps running when the launcher exits.
+
 ## [0.0.2] - 2026-10-25
 
 ### Added
