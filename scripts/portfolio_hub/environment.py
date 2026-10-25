@@ -17,6 +17,10 @@ class EnvironmentAlreadyExistsError(ValueError):
     pass
 
 
+class ToolNotRegisteredError(ValueError):
+    pass
+
+
 class EnvironmentName(RootModel[Annotated[str, Field(min_length=2, max_length=64, pattern=r"^[A-Za-z0-9_]+$")]], frozen=True):
 
     def __str__(self) -> str:
@@ -87,6 +91,9 @@ class Environment:
 
     def replace_tools(self, tools: Iterable[ToolName], default_tool: ToolName = TERMINAL) -> None:
         self._tools, self._default_tool = self._validated_tools(tools, default_tool)
+
+    def can_launch(self, tool: ToolName) -> bool:
+        return tool == TERMINAL or tool in self._tools
 
     def _validated_packages(self, packages: Iterable[Package]) -> tuple[Package, ...]:
         packages = tuple(packages)

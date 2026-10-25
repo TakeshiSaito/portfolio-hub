@@ -51,3 +51,12 @@ def test_post_launches_in_an_unknown_environment_is_not_found(client: TestClient
 
     assert response.status_code == 404
     assert response.json() == {"detail": f"environment {environment_id} does not exist"}
+
+
+def test_post_launches_with_an_unregistered_tool_is_unprocessable(client: TestClient, project: dto.Project):
+    environment = applications.create_environment(project.id, "anim", [("greeter", "2.0.0")], tools=["greet"])
+
+    response = client.post(f"/api/environments/{environment.id}/launches", json={"tool": "nosuchtool"})
+
+    assert response.status_code == 422
+    assert response.json() == {"detail": "tool nosuchtool is not one of the tools of environment anim"}

@@ -32,6 +32,14 @@ def test_launch(cli, project: dto.Project, capsys: pytest.CaptureFixture[str]):
     assert int(capsys.readouterr().out.strip()) > 0
 
 
+def test_launch_unregistered_tool_fails(cli, project: dto.Project, capsys: pytest.CaptureFixture[str]):
+    applications.create_environment(project.id, "anim", [("greeter", "2.0.0")], tools=["greet"])
+
+    assert cli("phub launch sample_project anim nosuchtool") == 1
+
+    assert capsys.readouterr().err == "tool nosuchtool is not one of the tools of environment anim\n"
+
+
 def test_launch_unknown_environment_fails(cli, project: dto.Project, capsys: pytest.CaptureFixture[str]):
     assert cli("phub launch sample_project unknown greet") == 1
 

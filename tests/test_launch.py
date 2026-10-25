@@ -5,6 +5,7 @@ import pytest
 
 from portfolio_hub import applications
 from portfolio_hub.applications import dto
+from portfolio_hub.environment import ToolNotRegisteredError
 from portfolio_hub.launcher import FailedToResolveError
 
 
@@ -38,6 +39,13 @@ def test_launch_with_conflicting_packages_fails(project: dto.Project):
 
     with pytest.raises(FailedToResolveError):
         applications.launch(environment.id, "cheer")
+
+
+def test_launch_unregistered_tool_fails(project: dto.Project):
+    environment = applications.create_environment(project.id, "anim", [("greeter", "2.0.0")], tools=["greet"])
+
+    with pytest.raises(ToolNotRegisteredError):
+        applications.launch(environment.id, "nosuchtool")
 
 
 def test_launch_without_a_tool_runs_the_default_tool(project: dto.Project, capfd: pytest.CaptureFixture[str]):
