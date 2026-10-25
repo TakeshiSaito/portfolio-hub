@@ -22,10 +22,6 @@ class SqLiteEnvironmentRepository(Repository):
                 raise EnvironmentNotFoundError(f"environment {environment_id} does not exist")
             return self._to_entity(record)
 
-    def exists(self, environment_id: UUID) -> bool:
-        with Session(self._engine) as session:
-            return session.get(models.Environment, environment_id) is not None
-
     def list(self, project_id: UUID) -> builtins.list[Environment]:
         with Session(self._engine) as session:
             records = session.scalars(select(models.Environment).where(models.Environment.project_id == project_id).order_by(literal_column("rowid")))

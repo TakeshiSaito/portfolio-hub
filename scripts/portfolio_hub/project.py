@@ -57,10 +57,6 @@ class Repository(ABC):
         ...
 
     @abstractmethod
-    def exists(self, project_id: UUID) -> bool:
-        ...
-
-    @abstractmethod
     def list(self) -> builtins.list[Project]:
         ...
 

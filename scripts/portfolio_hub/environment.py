@@ -126,10 +126,6 @@ class Repository(ABC):
         ...
 
     @abstractmethod
-    def exists(self, environment_id: UUID) -> bool:
-        ...
-
-    @abstractmethod
     def list(self, project_id: UUID) -> builtins.list[Environment]:
         ...
 

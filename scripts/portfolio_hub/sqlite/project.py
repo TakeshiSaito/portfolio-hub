@@ -21,10 +21,6 @@ class SqLiteProjectRepository(Repository):
                 raise ProjectNotFoundError(f"project {project_id} does not exist")
             return Project(ProjectName(record.name), id=record.id)
 
-    def exists(self, project_id: UUID) -> bool:
-        with Session(self._engine) as session:
-            return session.get(models.Project, project_id) is not None
-
     def list(self) -> builtins.list[Project]:
         with Session(self._engine) as session:
             records = session.scalars(select(models.Project).order_by(literal_column("rowid")))
