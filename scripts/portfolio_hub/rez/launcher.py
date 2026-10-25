@@ -25,7 +25,7 @@ class RezLauncher(Launcher):
         context = self._resolve_context(environment)
         process = self._open_terminal(context) if tool == TERMINAL else context.execute_command([str(tool)])
         Thread(target=process.wait, daemon=True).start()
-        return LaunchResult(resolved_packages=tuple(self._resolved_packages(context)), pid=process.pid)
+        return LaunchResult(tool=tool, resolved_packages=tuple(self._resolved_packages(context)), pid=process.pid)
 
     def _resolve_context(self, environment: Environment) -> ResolvedContext:
         paths = list(dict.fromkeys([*config.packages_path, str(self._bundled_packages_path)]))

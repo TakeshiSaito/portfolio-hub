@@ -52,9 +52,10 @@ class Environment(BaseModel, frozen=True):
 
 
 class Launch(BaseModel, frozen=True):
+    tool: str
     pid: int
     resolved_packages: tuple[Package, ...]
 
     @classmethod
     def from_result(cls, result: launcher.LaunchResult) -> Self:
-        return cls(pid=result.pid, resolved_packages=tuple(Package.from_package(item) for item in result.resolved_packages))
+        return cls(tool=str(result.tool), pid=result.pid, resolved_packages=tuple(Package.from_package(item) for item in result.resolved_packages))

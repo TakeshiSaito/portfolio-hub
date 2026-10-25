@@ -41,7 +41,7 @@ def test_post_launches(client: TestClient, project: dto.Project):
     body = response.json()
     assert response.status_code == 201
     assert body["pid"] > 0
-    assert body == {"pid": body["pid"], "resolved_packages": [{"name": "greeter", "version": "2.0.0"}]}
+    assert body == {"tool": "greet", "pid": body["pid"], "resolved_packages": [{"name": "greeter", "version": "2.0.0"}]}
 
 
 def test_post_launches_in_an_unknown_environment_is_not_found(client: TestClient):
