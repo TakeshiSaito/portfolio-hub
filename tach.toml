@@ -3,7 +3,7 @@ exclude = ["**/__pycache__"]
 
 [[modules]]
 path = "portfolio_hub.project"
-depends_on = []
+depends_on = ["portfolio_hub.environment"]
 
 [[modules]]
 path = "portfolio_hub.package"
@@ -18,12 +18,8 @@ path = "portfolio_hub.launcher"
 depends_on = ["portfolio_hub.environment", "portfolio_hub.package"]
 
 [[modules]]
-path = "portfolio_hub.services"
-depends_on = ["portfolio_hub.project", "portfolio_hub.environment", "portfolio_hub.package"]
-
-[[modules]]
 path = "portfolio_hub.applications"
-depends_on = ["portfolio_hub.project", "portfolio_hub.environment", "portfolio_hub.package", "portfolio_hub.launcher", "portfolio_hub.services"]
+depends_on = ["portfolio_hub.project", "portfolio_hub.environment", "portfolio_hub.package", "portfolio_hub.launcher"]
 
 [[modules]]
 path = "portfolio_hub.env"

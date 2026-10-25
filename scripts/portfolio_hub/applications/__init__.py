@@ -4,7 +4,8 @@ from uuid import UUID
 
 from dependency_injector.wiring import Provide, inject
 
-from portfolio_hub import services
+from portfolio_hub import environment as environments
+from portfolio_hub import project as projects
 from portfolio_hub.applications import dto
 from portfolio_hub.environment import TERMINAL, Environment, EnvironmentName, ToolName
 from portfolio_hub.environment import Repository as EnvironmentRepository
@@ -26,13 +27,9 @@ def list_projects(
     return [dto.Project.from_project(project) for project in projects]
 
 
-@inject
 def create_project(
     name: str,
     environments: Sequence[dto.NewEnvironment] = (),
-    *,
-    project_repository: ProjectRepository = Provide["project_repository"],
-    environment_repository: EnvironmentRepository = Provide["environment_repository"],
 ) -> dto.Project:
     project = Project(ProjectName(name))
 
@@ -42,13 +39,11 @@ def create_project(
         tools = [ToolName(tool) for tool in environment.tools]
         created.append(Environment(project.id, EnvironmentName(environment.name), packages, tools, ToolName(environment.default_tool)))
 
-    services.create_environments(project, created)
-    project_repository.save(project)
+    projects.create(project, created)
 
     logger.info("created project %s (%s)", project.name, project.id)
 
     for environment in created:
-        environment_repository.save(environment)
         logger.info("created environment %s (%s) in project %s", environment.name, environment.id, project.name)
 
     return dto.Project.from_project(project)
@@ -76,7 +71,7 @@ def delete_project(
     environment_repository: EnvironmentRepository = Provide["environment_repository"],
 ) -> None:
     project = project_repository.get(project_id)
-    for environment in services.delete_project(project):
+    for environment in projects.delete(project):
         logger.info("deleted environment %s (%s)", environment.name, environment.id)
     logger.info("deleted project %s (%s)", project.name, project.id)
 
@@ -105,8 +100,8 @@ def create_environment(
     environment_repository: EnvironmentRepository = Provide["environment_repository"],
 ) -> dto.Environment:
     project = project_repository.get(project_id)
-    environment = services.create_environment(
-        project,
+    environment = environments.create(
+        project.id,
         EnvironmentName(name),
         [Package(PackageName(package_name), PackageVersion(version)) for package_name, version in packages],
         [ToolName(tool) for tool in tools],
@@ -126,7 +121,7 @@ def rename_environment(
 ) -> None:
     environment = environment_repository.get(environment_id)
     old_name = environment.name
-    services.rename_environment(environment, EnvironmentName(name))
+    environments.rename(environment, EnvironmentName(name))
     environment_repository.save(environment)
     logger.info("renamed environment %s to %s (%s)", old_name, environment.name, environment.id)
 
