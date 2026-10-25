@@ -77,20 +77,22 @@ def delete_project(
     environment_repository: EnvironmentRepository = Provide["environment_repository"],
 ) -> None:
     project = project_repository.get(project_id)
-    for environment in environment_repository.list():
-        if environment.project_id == project_id:
-            environment_repository.delete(environment.id)
-            logger.info("deleted environment %s (%s)", environment.name, environment.id)
+    for environment in environment_repository.list(project_id):
+        environment_repository.delete(environment.id)
+        logger.info("deleted environment %s (%s)", environment.name, environment.id)
     project_repository.delete(project_id)
     logger.info("deleted project %s (%s)", project.name, project.id)
 
 
 @inject
 def list_environments(
+    project_id: UUID,
     *,
+    project_repository: ProjectRepository = Provide["project_repository"],
     environment_repository: EnvironmentRepository = Provide["environment_repository"],
 ) -> list[dto.Environment]:
-    environments = environment_repository.list()
+    project = project_repository.get(project_id)
+    environments = environment_repository.list(project.id)
     return [dto.Environment.from_environment(environment) for environment in environments]
 
 

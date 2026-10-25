@@ -34,7 +34,7 @@ def test_post_projects_with_environments(client: TestClient):
     )
 
     [project] = applications.list_projects()
-    [environment] = applications.list_environments()
+    [environment] = applications.list_environments(project.id)
     assert response.status_code == 201
     assert response.json() == {"id": str(project.id), "name": "sample_project"}
     assert environment == dto.Environment(

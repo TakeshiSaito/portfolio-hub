@@ -126,7 +126,7 @@ class Repository(ABC):
         ...
 
     @abstractmethod
-    def list(self) -> builtins.list[Environment]:
+    def list(self, project_id: UUID) -> builtins.list[Environment]:
         ...
 
     @abstractmethod

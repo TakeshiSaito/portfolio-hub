@@ -38,7 +38,7 @@ def test_create_project_with_environments_writes_a_log(caplog: pytest.LogCapture
 
     project = applications.create_project("sample_project", environments=[dto.NewEnvironment(name="anim", packages=[dto.Package(name="greeter", version="2.0.0")])])
 
-    [environment] = applications.list_environments()
+    [environment] = applications.list_environments(project.id)
     assert caplog.messages == [
         f"created project sample_project ({project.id})",
         f"created environment anim ({environment.id}) in project sample_project",

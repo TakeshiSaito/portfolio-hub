@@ -4,7 +4,7 @@ import pytest
 
 from portfolio_hub import applications
 from portfolio_hub.applications import dto
-from portfolio_hub.environment import EnvironmentAlreadyExistsError
+from portfolio_hub.environment import EnvironmentAlreadyExistsError, EnvironmentNotFoundError
 from portfolio_hub.project import ProjectAlreadyExistsError, ProjectNotFoundError
 
 
@@ -23,7 +23,7 @@ def test_create_project_with_environments():
         ],
     )
 
-    [anim, layout] = applications.list_environments()
+    [anim, layout] = applications.list_environments(project.id)
     assert anim == dto.Environment(
         id=anim.id,
         project_id=project.id,
@@ -52,7 +52,6 @@ def test_create_project_with_two_environments_of_the_same_name_fails():
         applications.create_project("sample_project", environments=environments)
 
     assert applications.list_projects() == []
-    assert applications.list_environments() == []
 
 
 @pytest.mark.parametrize("name", ["sample", "Sample_2", "__", "A0", "layout_v2", "a" * 64])
@@ -72,7 +71,7 @@ def test_create_project_with_an_existing_name_fails(project: dto.Project):
     with pytest.raises(ProjectAlreadyExistsError):
         applications.create_project("sample_project", environments=[dto.NewEnvironment(name="anim", packages=[dto.Package(name="greeter", version="2.0.0")])])
 
-    assert applications.list_environments() == []
+    assert applications.list_environments(project.id) == []
 
 
 def test_rename_project(project: dto.Project):
@@ -109,11 +108,12 @@ def test_delete_project(project: dto.Project):
 
 def test_delete_project_deletes_its_environments(project: dto.Project):
     environment = applications.create_environment(project.id, "anim", [("greeter", "2.0.0")])
-    assert environment.id in [e.id for e in applications.list_environments()]
+    assert environment.id in [e.id for e in applications.list_environments(project.id)]
 
     applications.delete_project(project.id)
 
-    assert environment.id not in [e.id for e in applications.list_environments()]
+    with pytest.raises(EnvironmentNotFoundError):
+        applications.resolve_environment(environment.id)
 
 
 def test_delete_project_keeps_the_environments_of_other_projects(project: dto.Project):
@@ -122,7 +122,7 @@ def test_delete_project_keeps_the_environments_of_other_projects(project: dto.Pr
 
     applications.delete_project(project.id)
 
-    assert kept.id in [e.id for e in applications.list_environments()]
+    assert kept.id in [e.id for e in applications.list_environments(other.id)]
 
 
 def test_rename_unknown_project_fails():

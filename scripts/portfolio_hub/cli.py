@@ -132,17 +132,15 @@ def _delete_project(arguments: argparse.Namespace) -> None:
 
 
 def _list_environments(arguments: argparse.Namespace) -> None:
-    project_id = _get_project_id(arguments.project)
     table = Table("name", "packages", "tools", "default tool", box=None)
-    for environment in applications.list_environments():
-        if environment.project_id == project_id:
-            packages = sorted(environment.packages, key=lambda package: (package.name, package.version))
-            table.add_row(
-                environment.name,
-                ", ".join(f"{package.name} {package.version}" for package in packages),
-                ", ".join(sorted(environment.tools)),
-                environment.default_tool,
-            )
+    for environment in applications.list_environments(_get_project_id(arguments.project)):
+        packages = sorted(environment.packages, key=lambda package: (package.name, package.version))
+        table.add_row(
+            environment.name,
+            ", ".join(f"{package.name} {package.version}" for package in packages),
+            ", ".join(sorted(environment.tools)),
+            environment.default_tool,
+        )
     Console().print(table)
 
 
@@ -211,8 +209,7 @@ def _get_project_id(name: str) -> UUID:
 
 
 def _get_environment(project: str, name: str) -> dto.Environment:
-    project_id = _get_project_id(project)
-    for environment in applications.list_environments():
-        if environment.project_id == project_id and environment.name == name:
+    for environment in applications.list_environments(_get_project_id(project)):
+        if environment.name == name:
             return environment
     raise EnvironmentNotFoundError(f"environment {name} does not exist in project {project}")

@@ -13,7 +13,7 @@ from portfolio_hub.applications import dto
 from portfolio_hub.env import Env
 from portfolio_hub.environment import TERMINAL, EnvironmentAlreadyExistsError
 from portfolio_hub.launcher import FailedToResolveError
-from portfolio_hub.project import ProjectAlreadyExistsError, ProjectNotFoundError
+from portfolio_hub.project import ProjectAlreadyExistsError
 
 
 class Error(BaseModel):
@@ -112,10 +112,7 @@ def delete_project(project_id: UUID) -> None:
 
 @router.get("/projects/{project_id}/environments", tags=["environments"], responses={**NOT_FOUND, **UNPROCESSABLE})
 def list_environments(project_id: UUID) -> list[dto.Environment]:
-    if project_id not in [project.id for project in applications.list_projects()]:
-        raise ProjectNotFoundError(f"project {project_id} does not exist")
-    environments = applications.list_environments()
-    return [environment for environment in environments if environment.project_id == project_id]
+    return applications.list_environments(project_id)
 
 
 @router.post("/projects/{project_id}/environments", status_code=status.HTTP_201_CREATED, tags=["environments"], responses={**NOT_FOUND, **CONFLICT, **UNPROCESSABLE})

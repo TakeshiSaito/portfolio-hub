@@ -11,13 +11,26 @@ from portfolio_hub.project import ProjectNotFoundError
 def test_create_environment(project: dto.Project):
     environment = applications.create_environment(project.id, "anim", [("greeter", "2.0.0"), ("greeter_plugin", "1.0.0")], tools=["greet", "cheer"], default_tool="cheer")
 
-    [saved] = applications.list_environments()
+    [saved] = applications.list_environments(project.id)
     assert saved.id == environment.id
     assert saved.project_id == project.id
     assert saved.name == "anim"
     assert saved.default_tool == "cheer"
     assert set(saved.packages) == {dto.Package(name="greeter", version="2.0.0"), dto.Package(name="greeter_plugin", version="1.0.0")}
     assert set(saved.tools) == {"greet", "cheer"}
+
+
+def test_list_environments(project: dto.Project):
+    anim = applications.create_environment(project.id, "anim", [("greeter", "2.0.0")])
+    other = applications.create_project("other_project")
+    applications.create_environment(other.id, "fx", [("greeter", "2.0.0")])
+
+    assert applications.list_environments(project.id) == [anim]
+
+
+def test_list_environments_of_an_unknown_project_fails():
+    with pytest.raises(ProjectNotFoundError):
+        applications.list_environments(uuid4())
 
 
 @pytest.mark.parametrize("name", ["sample", "Sample_2", "__", "A0", "layout_v2", "a" * 64])
@@ -49,7 +62,7 @@ def test_create_environment_with_the_name_of_one_in_another_project(project: dto
 
     environment = applications.create_environment(other.id, "anim", [("greeter", "2.0.0")])
 
-    assert environment.id in [e.id for e in applications.list_environments()]
+    assert environment.id in [e.id for e in applications.list_environments(other.id)]
 
 
 def test_create_environment_without_a_package_fails(project: dto.Project):
@@ -95,7 +108,7 @@ def test_rename_environment_and_replace_its_packages_and_tools(project: dto.Proj
     applications.replace_packages(environment.id, [("greeter_plugin", "1.0.0")])
     applications.replace_tools(environment.id, ["cheer"], default_tool="cheer")
 
-    [saved] = applications.list_environments()
+    [saved] = applications.list_environments(project.id)
     assert saved.id == environment.id
     assert saved.name == "layout"
     assert saved.packages == (dto.Package(name="greeter_plugin", version="1.0.0"),)
@@ -127,11 +140,11 @@ def test_replace_tools_with_a_default_tool_that_is_not_one_of_them_fails(project
 
 def test_delete_environment(project: dto.Project):
     environment = applications.create_environment(project.id, "anim", [("greeter", "2.0.0")])
-    assert environment.id in [e.id for e in applications.list_environments()]
+    assert environment.id in [e.id for e in applications.list_environments(project.id)]
 
     applications.delete_environment(environment.id)
 
-    assert environment.id not in [e.id for e in applications.list_environments()]
+    assert environment.id not in [e.id for e in applications.list_environments(project.id)]
 
 
 def test_rename_unknown_environment_fails():

@@ -5,6 +5,7 @@
 ### Changed
 
 - Support only Python 3.14 (`requires-python = ">=3.14,<3.15"`), because rez cannot load its plugins on Python 3.15.
+- `applications.list_environments` takes a project ID and lists only the environments of that project. It fails with `ProjectNotFoundError` when the project does not exist.
 
 ## [0.0.1] - 2026-10-25
 
