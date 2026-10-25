@@ -74,3 +74,10 @@ def test_launch_without_a_tool_opens_a_terminal(project: dto.Project, tmp_path: 
             break
         time.sleep(0.1)
     assert record.read_text() == "2.0.0\n"
+
+
+def test_launch_with_a_missing_package_fails(project: dto.Project):
+    environment = applications.create_environment(project.id, "anim", [("greeter", "9.9.9")], tools=["greet"])
+
+    with pytest.raises(FailedToResolveError):
+        applications.launch(environment.id, "greet")

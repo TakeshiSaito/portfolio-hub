@@ -24,6 +24,15 @@ def test_get_resolved_packages_of_conflicting_packages_is_unprocessable(client: 
     assert response.json() == {"detail": "The following package conflicts occurred: (greeter-2 <--!--> greeter==1.0.0)"}
 
 
+def test_get_resolved_packages_of_a_missing_package_is_unprocessable(client: TestClient, project: dto.Project):
+    environment = applications.create_environment(project.id, "anim", [("greeter", "9.9.9")])
+
+    response = client.get(f"/api/environments/{environment.id}/resolved-packages")
+
+    assert response.status_code == 422
+    assert response.json() == {"detail": "Package could not be found: greeter-9.9.9"}
+
+
 def test_get_resolved_packages_of_an_unknown_environment_is_not_found(client: TestClient):
     environment_id = uuid4()
 

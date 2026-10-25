@@ -27,6 +27,14 @@ def test_resolve_with_conflicting_packages_fails(cli, project: dto.Project, caps
     assert capsys.readouterr().err
 
 
+def test_resolve_with_a_missing_package_fails(cli, project: dto.Project, capsys: pytest.CaptureFixture[str]):
+    applications.create_environment(project.id, "anim", [("greeter", "9.9.9")])
+
+    assert cli("phub resolve sample_project anim") == 1
+
+    assert capsys.readouterr().err == "Package could not be found: greeter-9.9.9\n"
+
+
 def test_launch(cli, project: dto.Project, capsys: pytest.CaptureFixture[str]):
     applications.create_environment(project.id, "anim", [("greeter", "2.0.0")], tools=["greet"])
 

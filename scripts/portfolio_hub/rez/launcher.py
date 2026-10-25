@@ -5,6 +5,7 @@ from tempfile import NamedTemporaryFile
 from threading import Thread
 
 from rez.config import config
+from rez.exceptions import PackageFamilyNotFoundError, PackageNotFoundError
 from rez.resolved_context import ResolvedContext
 
 from portfolio_hub.environment import TERMINAL, Environment, ToolName
@@ -29,7 +30,10 @@ class RezLauncher(Launcher):
 
     def _resolve_context(self, environment: Environment) -> ResolvedContext:
         paths = list(dict.fromkeys([*config.packages_path, str(self._bundled_packages_path)]))
-        context = ResolvedContext([f"{package.name}-{package.version}" for package in environment.packages], package_paths=paths)
+        try:
+            context = ResolvedContext([f"{package.name}-{package.version}" for package in environment.packages], package_paths=paths)
+        except (PackageNotFoundError, PackageFamilyNotFoundError) as error:
+            raise FailedToResolveError(str(error)) from error
         if not context.success:
             raise FailedToResolveError(context.failure_description)
         return context
