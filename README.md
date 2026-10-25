@@ -12,7 +12,7 @@
 ## 必要なもの
 
 - macOS または Linux
-- [uv](https://docs.astral.sh/uv/)（Python 3.14 は uv が自動で用意します）
+- [uv](https://docs.astral.sh/uv/)
 - 開いたターミナルで使う `python3`
 
 ## 1. 環境を用意する
@@ -48,6 +48,7 @@ $ uv run phub packages
 
 ```console
 $ uv run phub environments create sample_project anim --package greeter 2.0.0
+created environment anim in project sample_project
 $ uv run phub environments list sample_project
  name                packages       tools  default tool
  sample_environment  hello 1.0.0    hello  terminal
@@ -56,8 +57,9 @@ $ uv run phub environments list sample_project
 
 環境を起動します。既定のツールが `terminal` なので、`anim` 環境に入ったターミナルが新しく開きます。
 
-```bash
-uv run phub launch sample_project anim
+```console
+$ uv run phub launch sample_project anim
+launched terminal in environment anim of project sample_project (pid 12345)
 ```
 
 開いたターミナルで Python を起動し、`greeter` を使います。
