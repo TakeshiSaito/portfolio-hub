@@ -1,0 +1,2 @@
+#!/bin/sh
+SHELL="$(dirname "$0")/record_shell" exec "$1" < /dev/null

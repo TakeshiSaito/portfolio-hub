@@ -1,0 +1,2 @@
+#!/bin/sh
+python3 -c "import greeter; print(greeter.__version__)" > "$PORTFOLIO_HUB_TEST_RECORD"

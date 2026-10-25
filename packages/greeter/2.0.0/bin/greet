@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+import sys
+
+import greeter
+
+print(f"{greeter.greet(' '.join(sys.argv[1:]) or 'world')} (greeter {greeter.__version__})")

@@ -1,0 +1,10 @@
+__pycache__/
+.coverage
+.env
+.DS_Store
+*.log
+/logs/
+/portfolio_hub.db
+/reports/
+/portfolio/
+/.idea

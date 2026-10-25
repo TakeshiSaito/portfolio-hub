@@ -1,0 +1,50 @@
+[project]
+name = "portfolio-hub"
+version = "0.0.1"
+description = "Local hub for projects and their rez environments"
+requires-python = ">=3.14"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = [
+    "argcomplete",
+    "dependency-injector",
+    "fastapi",
+    "pydantic",
+    "pydantic-settings",
+    "rez",
+    "rich",
+    "sqlalchemy",
+    "uvicorn",
+]
+
+[project.scripts]
+phub = "portfolio_hub.cli:main"
+
+[dependency-groups]
+dev = [
+    "httpx2",
+    "pytest",
+    "pytest-cov",
+    "ruff",
+    "tach",
+    "ty>=0.0.91",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.6,<0.12"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = "scripts"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--import-mode=importlib"]
+
+[tool.ruff]
+line-length = 250
+src = ["scripts", "tests"]
+extend-exclude = [".claude", "packages/**/package.py"]
+
+[tool.ty.src]
+exclude = ["packages"]
