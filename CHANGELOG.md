@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.3] - 2026-10-26
+
+### Fixed
+
+- Resolving or launching an environment uses the exact package version that was chosen. A later build, such as `2.0.0.1`, is no longer selected when the environment asks for `2.0.0`.
+
 ## [0.0.2] - 2026-10-25
 
 ### Added
