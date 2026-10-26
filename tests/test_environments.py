@@ -132,6 +132,32 @@ def test_rename_environment_to_another_environments_name_in_the_project_fails(pr
         applications.rename_environment(layout.id, "anim")
 
 
+def test_rename_environment_to_a_new_name_when_the_project_has_another(project: dto.Project):
+    anim = applications.create_environment(project.id, "anim", [("greeter", "2.0.0")])
+    layout = applications.create_environment(project.id, "layout", [("hello", "1.0.0")], tools=["greet"], default_tool="greet")
+
+    applications.rename_environment(layout.id, "fx")
+
+    assert applications.list_environments(project.id) == [
+        dto.Environment(
+            id=anim.id,
+            project_id=project.id,
+            name="anim",
+            packages=(dto.Package(name="greeter", version="2.0.0"),),
+            tools=(),
+            default_tool="terminal",
+        ),
+        dto.Environment(
+            id=layout.id,
+            project_id=project.id,
+            name="fx",
+            packages=(dto.Package(name="hello", version="1.0.0"),),
+            tools=("greet",),
+            default_tool="greet",
+        ),
+    ]
+
+
 def test_replace_packages_with_another_version(project: dto.Project):
     environment = applications.create_environment(project.id, "anim", [("greeter", "1.0.0")])
 
