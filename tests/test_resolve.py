@@ -17,6 +17,21 @@ def test_resolve_environment_uses_the_chosen_version(project: dto.Project, versi
     assert dto.Package(name="greeter", version=version) in applications.resolve_environment(environment.id)
 
 
+def test_resolve_environment_uses_the_chosen_version_when_a_later_build_exists(project: dto.Project, tmp_path: Path):
+    package = tmp_path / "greeter" / "2.0.0.1"
+    package.mkdir(parents=True)
+    (package / "package.py").write_text("name = 'greeter'\nversion = '2.0.0.1'\n")
+    environment = applications.create_environment(project.id, "anim", [("greeter", "2.0.0")])
+    config.override("packages_path", [str(tmp_path)])
+    try:
+        resolved = applications.resolve_environment(environment.id)
+    finally:
+        config.remove_override("packages_path")
+
+    assert dto.Package(name="greeter", version="2.0.0") in resolved
+    assert dto.Package(name="greeter", version="2.0.0.1") not in resolved
+
+
 def test_resolve_environment_uses_bundled_packages_when_they_are_not_on_the_search_path(project: dto.Project, tmp_path: Path):
     empty = tmp_path / "empty"
     empty.mkdir()

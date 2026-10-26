@@ -31,7 +31,7 @@ class RezLauncher(Launcher):
     def _resolve_context(self, environment: Environment) -> ResolvedContext:
         paths = list(dict.fromkeys([*config.packages_path, str(self._bundled_packages_path)]))
         try:
-            context = ResolvedContext([f"{package.name}-{package.version}" for package in environment.packages], package_paths=paths)
+            context = ResolvedContext([f"{package.name}=={package.version}" for package in environment.packages], package_paths=paths)
         except (PackageNotFoundError, PackageFamilyNotFoundError) as error:
             raise FailedToResolveError(str(error)) from error
         if not context.success:

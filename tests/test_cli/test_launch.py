@@ -32,7 +32,7 @@ def test_resolve_with_a_missing_package_fails(cli, given, capsys: pytest.Capture
 
     assert cli("phub resolve sample_project anim") == 1
 
-    assert capsys.readouterr().err == "Package could not be found: greeter-9.9.9\n"
+    assert capsys.readouterr().err == "Package could not be found: greeter==9.9.9\n"
 
 
 def test_launch(cli, given, capsys: pytest.CaptureFixture[str]):

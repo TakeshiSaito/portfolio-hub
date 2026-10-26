@@ -28,7 +28,7 @@ def test_get_resolved_packages_of_a_missing_package_is_unprocessable(client: Tes
     response = client.get(f"/api/environments/{environment['id']}/resolved-packages")
 
     assert response.status_code == 422
-    assert response.json() == {"detail": "Package could not be found: greeter-9.9.9"}
+    assert response.json() == {"detail": "Package could not be found: greeter==9.9.9"}
 
 
 def test_get_resolved_packages_of_an_unknown_environment_is_not_found(client: TestClient):
