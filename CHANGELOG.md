@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.3] - 2026-10-26
+
+### Added
+
+- `docs/operations.md` describes the rules shared by the command line and the HTTP API, how resolve and launch fail, and the database and log created on startup.
+
 ## [0.0.2] - 2026-10-25
 
 ### Added
