@@ -68,6 +68,22 @@ def test_rename_environment(cli, given, capsys: pytest.CaptureFixture[str]):
     ]
 
 
+def test_rename_an_environment_that_is_not_the_first(cli, given, capsys: pytest.CaptureFixture[str]):
+    given("phub projects create sample_project")
+    given("phub environments create sample_project anim --package greeter 2.0.0")
+    given("phub environments create sample_project layout --package hello 1.0.0 --tool greet --default-tool greet")
+
+    assert cli("phub environments rename sample_project layout fx") == 0
+
+    assert capsys.readouterr().out == "renamed environment layout to fx in project sample_project\n"
+    assert cli("phub environments list sample_project") == 0
+    assert [line.rstrip() for line in capsys.readouterr().out.splitlines()] == [
+        " name  packages       tools  default tool",
+        " anim  greeter 2.0.0         terminal",
+        " fx    hello 1.0.0    greet  greet",
+    ]
+
+
 def test_set_packages(cli, given, capsys: pytest.CaptureFixture[str]):
     given("phub projects create sample_project")
     given("phub environments create sample_project anim --package greeter 1.0.0")
