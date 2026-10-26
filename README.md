@@ -7,8 +7,10 @@
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![ty](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ty/main/assets/badge/v0.json)](https://github.com/astral-sh/ty)
 
-1 台のマシン上で、プロジェクトとその中の [rez](https://github.com/AcademySoftwareFoundation/rez) 環境を管理し、その環境でツールを起動するハブです。
-操作の入口として、コマンドライン（`phub`）と HTTP API（FastAPI）を用意しています。
+プロジェクトとその環境を管理し、指定した環境でツールを起動するためのハブです。
+操作の入口として、コマンドライン（`phub`）と HTTP API を用意しています。
+
+現在は MVP ですが、ユーザー管理や映像プロジェクトの管理などへ広げることも視野に入れて設計しています。
 
 ![環境を作って起動し、開いたターミナルの Python から greeter を使う様子](.github/demo.gif)
 
