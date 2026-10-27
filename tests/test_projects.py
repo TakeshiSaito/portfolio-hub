@@ -80,6 +80,14 @@ def test_rename_project(project: dto.Project):
     assert applications.list_projects() == [dto.Project(id=project.id, name="renamed")]
 
 
+def test_rename_project_keeps_its_environments(project: dto.Project):
+    environment = applications.create_environment(project.id, "anim", [("greeter", "2.0.0")], tools=["greet"], default_tool="greet")
+
+    applications.rename_project(project.id, "renamed")
+
+    assert applications.list_environments(project.id) == [environment]
+
+
 def test_rename_project_to_its_own_name(project: dto.Project):
     applications.rename_project(project.id, "sample_project")
 
@@ -91,6 +99,11 @@ def test_rename_project_to_another_projects_name_fails(project: dto.Project):
 
     with pytest.raises(ProjectAlreadyExistsError):
         applications.rename_project(other.id, "sample_project")
+
+    assert applications.list_projects() == [
+        dto.Project(id=project.id, name="sample_project"),
+        dto.Project(id=other.id, name="other_project"),
+    ]
 
 
 def test_rename_project_to_an_invalid_name_fails(project: dto.Project):
