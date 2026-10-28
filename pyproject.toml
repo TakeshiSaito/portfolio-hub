@@ -1,6 +1,6 @@
 [project]
 name = "portfolio-hub"
-version = "0.0.2"
+version = "0.0.3"
 description = "A hub that defines projects, sets up their environments, and launches tools in them."
 requires-python = ">=3.14,<3.15"
 license = "MIT"

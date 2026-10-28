@@ -1,3 +1,6 @@
+import os
+import signal
+import tempfile
 import time
 from pathlib import Path
 
@@ -74,6 +77,41 @@ def test_launch_without_a_tool_opens_a_terminal(project: dto.Project, tmp_path: 
             break
         time.sleep(0.1)
     assert record.read_text() == "2.0.0\n"
+
+
+def test_launch_keeps_variables_from_the_parent_process(project: dto.Project, monkeypatch: pytest.MonkeyPatch, capfd: pytest.CaptureFixture[str]):
+    monkeypatch.setenv("PORTFOLIO_HUB_PARENT_MARKER", "present")
+    environment = applications.create_environment(project.id, "anim", [("greeter", "2.0.0")], tools=["env"])
+
+    applications.launch(environment.id, "env")
+
+    out = ""
+    for _ in range(100):
+        out += capfd.readouterr().out
+        if "PORTFOLIO_HUB_PARENT_MARKER=present" in out and "greeter/2.0.0/python" in out:
+            break
+        time.sleep(0.1)
+    assert "PORTFOLIO_HUB_PARENT_MARKER=present" in out
+    assert "greeter/2.0.0/python" in out
+
+
+def test_launch_starts_the_tool_in_its_own_session(project: dto.Project):
+    directory = Path(tempfile.mkdtemp(prefix="ph"))
+    tool = directory / "stay"
+    tool.write_text("#!/bin/sh\nexec sleep 30\n")
+    tool.chmod(0o755)
+    environment = applications.create_environment(project.id, "anim", [("greeter", "2.0.0")], tools=[str(tool)])
+
+    result = applications.launch(environment.id, str(tool))
+    try:
+        assert os.getsid(result.pid) != os.getsid(0)
+    finally:
+        try:
+            os.kill(result.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+        tool.unlink(missing_ok=True)
+        directory.rmdir()
 
 
 def test_launch_with_a_missing_package_fails(project: dto.Project):
